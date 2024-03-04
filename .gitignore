@@ -9,6 +9,10 @@
 .buildlog/
 .history
 .svn/
+# pub
+/pubspec
+pubspec
+./pubspec
 # IntelliJ related
 *.iml
 *.ipr

@@ -1,0 +1,4 @@
+#Sun Mar 03 02:34:09 IST 2024
+base.0=/Users/tejasva/study_sync/build/app/intermediates/dex/debug/mergeDexDebug/classes.dex
+renamed.0=classes.dex
+path.0=classes.dex

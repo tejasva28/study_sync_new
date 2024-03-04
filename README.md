@@ -1,1 +1,1 @@
-# study_sync_new
+# Study Sync

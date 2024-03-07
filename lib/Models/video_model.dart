@@ -29,6 +29,8 @@ class VideoModel {
       scheduledDate: json['scheduledDate'] != null ? DateTime.parse(json['scheduledDate']) : null,
     );
   }
+
+  toJson() {}
 }
 
 class Note {

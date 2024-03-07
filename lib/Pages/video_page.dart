@@ -46,7 +46,7 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
   void _addOrEditNote({Note? existingNote}) {
     final isEditing = existingNote != null;
     if (isEditing) {
-      _noteController.text = existingNote!.content; // Ensure existingNote is not null here
+      _noteController.text = existingNote.content; // Ensure existingNote is not null here
     }
 
     showModalBottomSheet(

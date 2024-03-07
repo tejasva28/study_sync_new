@@ -1,104 +1,78 @@
-// import 'package:flutter/material.dart';
-// import 'package:intl/intl.dart';
-// import 'package:study_sync/Models/video_model.dart';
-// import 'package:study_sync/models/home_page_model.dart';
-// import '../Models/time_scheduling_model.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../models/video_model.dart'; // Make sure this import is correct
+import '../models/time_scheduling_model.dart'; // Ensure you have this model
 
+class MonthDateRow extends StatelessWidget {
+  final List<PlaylistSchedule> playlistSchedules;
 
-// class MonthDateRow extends StatelessWidget {
-//   const MonthDateRow({Key? key, required this.selectedDateTime}) : super(key: key);
-  
-//   final DateTime selectedDateTime;
+  const MonthDateRow({Key? key, required this.playlistSchedules})
+      : super(key: key);
 
-//   Widget _buildScheduledVideo(BuildContext context, VideoModel video) {
-//     return Card(
-//       margin: EdgeInsets.only(bottom: 8),
-//       child: ListTile(
-//         leading: Icon(Icons.video_library),
-//         title: Text(video.title),
-//         subtitle: Text(video.videoUrl), // Or another property as needed
-//         trailing: Text(DateFormat.jm().format(video.scheduledDate!)), // Assuming scheduledDate is not null
-//       ),
-//     );
-//   }
+  Widget _buildScheduledVideo(BuildContext context, VideoModel video) {
+    // Default text for when scheduledDate is null
+    String scheduledTimeText = 'No scheduled time';
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         title: Text('Your Schedule'),
-//         backgroundColor: Colors.blue,
-//       ),
-//       body: ListView.builder(
-//         // itemCount: PlaylistSchedule.length,
-//         itemBuilder: (context, index) {
-//           // final schedule = PlaylistSchedule[index];
-//          // return ExpansionTile(
-//           //   title: Text(schedule.playlistTitle),
-//           //   subtitle: Text(DateFormat('yyyy-MM-dd').format(schedule.selectedDateTime)),
-//           //   children: schedule.videos.map((video) => _buildScheduledVideo(context, video)).toList(),
-//            );
-//         },
-//       ),
-//     );
-//   }
-// }
-// //     List<PlaylistSchedule> PlaylistSchedule = [
-// //     PlaylistSchedule(
-// //       date: DateTime.now().add(Duration(days: 1)),
-// //     time: '10 AM',
-// //      title: 'Video Title 1',
-// //          description: 'Description of the video or other details',   ),
-// //  ];
+    // Check if scheduledDate is not null before formatting
+    if (video.scheduledDate != null) {
+      scheduledTimeText = DateFormat.jm().format(video.scheduledDate!);
+    }
 
-//   Widget _buildMonthDateContainer(BuildContext context) {
-//     // Define your _buildMonthDateContainer method here
-//     return Container(); // Replace with actual implementation
-//   }
+    return Card(
+      margin: EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Icon(Icons.video_library),
+        title: Text(video.title),
+        subtitle: Text(video.videoUrl), // Display video URL or other detail
+        trailing: Text(scheduledTimeText), // Use the conditionally set text
+      ),
+    );
+  }
 
-//   Widget _buildImageWithText(BuildContext context) {
-//     // Define your _buildImageWithText method here
-//     return Container(); // Replace with actual implementation
-//   }
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Your Schedule'),
+        backgroundColor: Colors.blue,
+      ),
+      body: playlistSchedules.isNotEmpty
+          ? ListView.builder(
+              itemCount: playlistSchedules.length,
+              itemBuilder: (context, index) {
+                final schedule = playlistSchedules[index];
+                return ExpansionTile(
+                  title: Text(schedule.playlistTitle),
+                  subtitle: Text(DateFormat('yyyy-MM-dd')
+                      .format(schedule.selectedDateTime)),
+                  children: schedule.videos
+                      .map((video) => _buildScheduledVideo(context, video))
+                      .toList(),
+                );
+              },
+            )
+          : Center(
+              child: Text('No schedules found'),
+            ),
+    );
+  }
+}
 
-//   Widget _buildScheduleList(BuildContext context) {
-//     return ListView.builder(
-//       itemCount: 15, // Number of days to display
-//       itemBuilder: (context, index) {
-//         // The date can be dynamically generated or fetched from a list
-//         DateTime date = DateTime.now().add(Duration(days: index));
-//         return Column(
-//           crossAxisAlignment: CrossAxisAlignment.start,
-//           children: [
-//             Text(
-//               DateFormat('EEEE, MMM d').format(date), // Shows day of the week, Month day
-//               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-//             ),
-//             SizedBox(height: 10),
-//             _buildScheduledVideo(context, '10 AM', 'Video Title 1', 'Description of the video or other details'),
-//             _buildScheduledVideo(context, '3 PM', 'Video Title 2', 'Description of the video or other details'),
-//             _buildScheduledVideo(context, '8 PM', 'Video Title 3', 'Description of the video or other details'),
-//             SizedBox(height: 20),
-//           ],
-//         );
-//       },
-//     );
-//   }
+// Assuming PlaylistSchedule is a model class that looks something like this:
+class Playlist_Schedule {
+  final String playlistTitle;
+  final DateTime selectedDateTime;
+  final List<VideoModel> videos;
 
-//   Widget _buildScheduledVideo(BuildContext context, String time, String title, String description) {
-//     return Card(
-//       margin: EdgeInsets.only(bottom: 8),
-//       child: ListTile(
-//         leading: Icon(Icons.video_library), // Can be replaced with an appropriate image or icon
-//         title: Text(title),
-//         subtitle: Text(description),
-//         trailing: Text(time),
-//       ),
-//     );
-//   }
+  Playlist_Schedule({
+    required this.playlistTitle,
+    required this.selectedDateTime,
+    required this.videos,
+  });
+}
 
-// void main() {
-//   runApp(MaterialApp(
-//     home: MonthDateRow(playlistSchedules: [],),
-//   ));
-// }
+void main() {
+  runApp(MaterialApp(
+    home: MonthDateRow(playlistSchedules: []), // Example usage
+  ));
+}

@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
-import 'package:study_sync/Models/video_model.dart';
+import '../Models/video_model.dart';
 import 'package:study_sync/Pages/home.dart';
 import '../Models/time_scheduling_model.dart';
 
@@ -19,11 +19,18 @@ class TimeSchedulingPage extends StatefulWidget {
 
 class _TimeSchedulingPageState extends State<TimeSchedulingPage> {
   DateTime selectedDateTime = DateTime.now();
+  late Future<List<PlaylistSchedule>> futureScheduledPlaylists;
+
+  @override
+  void initState() {
+    super.initState();
+    futureScheduledPlaylists = fetchScheduledPlaylists();
+  }
 
  Future<List<PlaylistSchedule>> fetchScheduledPlaylists() async {
   try {
     final response = await http.get(
-      Uri.parse('http://localhost:4000/api/playlistSchedule/create'),
+      Uri.parse('https://fe00-117-220-236-245.ngrok-free.app/api/playlistSchedule/create'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },

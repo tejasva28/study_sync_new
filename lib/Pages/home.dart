@@ -1,78 +1,135 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'package:intl/intl.dart';
-import '../models/video_model.dart'; // Make sure this import is correct
-import '../models/time_scheduling_model.dart'; // Ensure you have this model
+import 'package:provider/provider.dart';
+import 'package:study_sync/service.dart';
+import '../Models/video_model.dart';
+import '../Provider/auth_provider.dart';
+import '../models/time_scheduling_model.dart';
 
-class MonthDateRow extends StatelessWidget {
-  final List<PlaylistSchedule> playlistSchedules;
+class MonthDateRow extends StatefulWidget {
+  @override
+  _MonthDateRowState createState() => _MonthDateRowState();
+}
 
-  const MonthDateRow({Key? key, required this.playlistSchedules})
-      : super(key: key);
+class _MonthDateRowState extends State<MonthDateRow> {
+  List<VideoModel>? videos;
+  bool isLoading = true;
+  String? errorMessage;
+  late ApiService _apiService;
+  late TokenStorageService _tokenStorageService;
 
-  Widget _buildScheduledVideo(BuildContext context, VideoModel video) {
-    // Default text for when scheduledDate is null
-    String scheduledTimeText = 'No scheduled time';
+  @override
+  void initState() {
+    super.initState();
+    _tokenStorageService = TokenStorageService();
+    _apiService = ApiService('https://fe00-117-220-236-245.ngrok-free.app/api',
+        _tokenStorageService);
+    fetchData();
+  }
+  
 
-    // Check if scheduledDate is not null before formatting
-    if (video.scheduledDate != null) {
-      scheduledTimeText = DateFormat.jm().format(video.scheduledDate!);
+  Future<void> fetchData() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      String? token = await _tokenStorageService.getToken();
+      if (token == null) {
+        throw Exception('No token found');
+      }
+      final fetchedVideos = await _apiService.fetchVideos();
+
+       // Debug print for checking video titles
+    for (var video in fetchedVideos) {
+        print("Video title: ${video.title}");
     }
+      setState(() {
+        videos = fetchedVideos.cast<VideoModel>();
+        print("Videos fetched: ${fetchedVideos.length}");
+        isLoading = false;
+      });
+    } catch (error) {
+      setState(() {
+        isLoading = false;
+        errorMessage = error.toString();
+      });
+    }
+  }
 
-    return Card(
-      margin: EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(Icons.video_library),
-        title: Text(video.title),
-        subtitle: Text(video.videoUrl), // Display video URL or other detail
-        trailing: Text(scheduledTimeText), // Use the conditionally set text
-      ),
-    );
+  List<DateTime> _getNextDates(int count) {
+    return List.generate(
+        count, (index) => DateTime.now().add(Duration(days: index)));
   }
 
   @override
   Widget build(BuildContext context) {
+    if (isLoading) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Scheduled Videos')),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    if (errorMessage != null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Error')),
+        body: Center(child: Text(errorMessage!)),
+      );
+    }
+
+    if (videos == null || videos!.isEmpty) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Scheduled Videos')),
+        body: Center(child: Text('No scheduled videos found')),
+      );
+    }
+
+    List<DateTime> dateList = _getNextDates(20);
+    int videoIndex = 0;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Your Schedule'),
-        backgroundColor: Colors.blue,
+      appBar: AppBar(title: Text('Scheduled Videos')),
+      body: ListView.builder(
+        itemCount: dateList.length,
+        itemBuilder: (context, index) {
+          DateTime date = dateList[index];
+          VideoModel video = videos![videoIndex % videos!.length];
+          videoIndex++;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  DateFormat('EEEE, MMMM d').format(date),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              _buildScheduledVideo(context, video),
+            ],
+          );
+        },
       ),
-      body: playlistSchedules.isNotEmpty
-          ? ListView.builder(
-              itemCount: playlistSchedules.length,
-              itemBuilder: (context, index) {
-                final schedule = playlistSchedules[index];
-                return ExpansionTile(
-                  title: Text(schedule.playlistTitle),
-                  subtitle: Text(DateFormat('yyyy-MM-dd')
-                      .format(schedule.selectedDateTime)),
-                  children: schedule.videos
-                      .map((video) => _buildScheduledVideo(context, video))
-                      .toList(),
-                );
-              },
-            )
-          : Center(
-              child: Text('No schedules found'),
-            ),
     );
   }
-}
 
-// Assuming PlaylistSchedule is a model class that looks something like this:
-class Playlist_Schedule {
-  final String playlistTitle;
-  final DateTime selectedDateTime;
-  final List<VideoModel> videos;
-
-  Playlist_Schedule({
-    required this.playlistTitle,
-    required this.selectedDateTime,
-    required this.videos,
-  });
-}
-
-void main() {
-  runApp(MaterialApp(
-    home: MonthDateRow(playlistSchedules: []), // Example usage
-  ));
+  Widget _buildScheduledVideo(BuildContext context, VideoModel video) {
+    return Card(
+      margin: EdgeInsets.only(bottom: 8),
+      child: ListTile(
+        leading: Icon(Icons.video_library),
+        title: Text(video.title,
+            style: TextStyle(
+                fontWeight: FontWeight.bold)), // Ensure title is displayed
+        subtitle: Text(video.videoUrl),
+        trailing: Text(DateFormat.jm().format(video.scheduledDate)),
+      ),
+    );
+  }
+  
+  
 }

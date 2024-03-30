@@ -1,4 +1,10 @@
 # This is a generated file; do not edit or check into version control.
+flutter_secure_storage=/Users/tejasva/.pub-cache/hosted/pub.dev/flutter_secure_storage-5.1.2/
+flutter_secure_storage_linux=/Users/tejasva/.pub-cache/hosted/pub.dev/flutter_secure_storage_linux-1.2.0/
+flutter_secure_storage_macos=/Users/tejasva/.pub-cache/hosted/pub.dev/flutter_secure_storage_macos-1.1.2/
+flutter_secure_storage_web=/Users/tejasva/.pub-cache/hosted/pub.dev/flutter_secure_storage_web-1.1.2/
+flutter_secure_storage_windows=/Users/tejasva/.pub-cache/hosted/pub.dev/flutter_secure_storage_windows-1.1.3/
+fluttertoast=/Users/tejasva/.pub-cache/hosted/pub.dev/fluttertoast-8.2.4/
 path_provider=/Users/tejasva/.pub-cache/hosted/pub.dev/path_provider-2.0.14/
 path_provider_android=/Users/tejasva/.pub-cache/hosted/pub.dev/path_provider_android-2.0.25/
 path_provider_foundation=/Users/tejasva/.pub-cache/hosted/pub.dev/path_provider_foundation-2.2.2/

@@ -212,6 +212,42 @@
       "languageVersion": "2.19"
     },
     {
+      "name": "flutter_secure_storage",
+      "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/flutter_secure_storage-5.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "flutter_secure_storage_linux",
+      "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/flutter_secure_storage_linux-1.2.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "flutter_secure_storage_macos",
+      "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/flutter_secure_storage_macos-1.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "flutter_secure_storage_platform_interface",
+      "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/flutter_secure_storage_platform_interface-1.0.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "flutter_secure_storage_web",
+      "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/flutter_secure_storage_web-1.1.2",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "flutter_secure_storage_windows",
+      "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/flutter_secure_storage_windows-1.1.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "flutter_test",
       "rootUri": "file:///Users/tejasva/FlutterDev/flutter/packages/flutter_test",
       "packageUri": "lib/",
@@ -222,6 +258,12 @@
       "rootUri": "file:///Users/tejasva/FlutterDev/flutter/packages/flutter_web_plugins",
       "packageUri": "lib/",
       "languageVersion": "3.0"
+    },
+    {
+      "name": "fluttertoast",
+      "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/fluttertoast-8.2.4",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
     },
     {
       "name": "font_awesome_flutter",
@@ -249,9 +291,9 @@
     },
     {
       "name": "go_router",
-      "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/go_router-7.1.1",
+      "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/go_router-13.1.0",
       "packageUri": "lib/",
-      "languageVersion": "2.18"
+      "languageVersion": "3.0"
     },
     {
       "name": "google_fonts",
@@ -740,7 +782,7 @@
       "languageVersion": "3.1"
     }
   ],
-  "generated": "2024-03-04T13:01:21.914603Z",
+  "generated": "2024-03-30T07:22:10.441470Z",
   "generator": "pub",
   "generatorVersion": "3.1.0-163.1.beta"
 }

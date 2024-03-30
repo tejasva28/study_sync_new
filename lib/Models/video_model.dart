@@ -4,7 +4,7 @@ class VideoModel {
   final String thumbnailUrl;
   final String videoUrl;
   final Duration duration;
-  final DateTime? scheduledDate;
+  final DateTime scheduledDate;
 
   VideoModel({
     required this.videoId,
@@ -12,25 +12,29 @@ class VideoModel {
     required this.thumbnailUrl,
     required this.videoUrl,
     required this.duration,
-    this.scheduledDate,
+    required this.scheduledDate,
   });
 
-
   factory VideoModel.fromJson(Map<String, dynamic> json) {
-    // Parse duration from a string if necessary, or use a default value
-    var durationSeconds = json['duration'] as int? ?? 0; // Example, adjust according to your JSON
+    var durationSeconds = json['duration'] as int? ?? 0;
+    DateTime parsedDate;
+
+    try {
+      // Ensure the scheduledDate includes time
+      parsedDate = DateTime.parse(json['scheduledDate'] ?? '2000-01-01T00:00:00Z');
+    } catch (_) {
+      parsedDate = DateTime.now(); // Fallback if parsing fails
+    }
 
     return VideoModel(
       videoId: json['videoId'] ?? '',
       title: json['title'] ?? '',
       thumbnailUrl: json['thumbnailUrl'] ?? '',
-      videoUrl: json['videoUrl'] ?? '', // Ensure this is provided in JSON
-      duration: Duration(seconds: durationSeconds), // Adjust parsing as needed
-      scheduledDate: json['scheduledDate'] != null ? DateTime.parse(json['scheduledDate']) : null,
+      videoUrl: json['videoUrl'] ?? '',
+      duration: Duration(seconds: durationSeconds),
+      scheduledDate: parsedDate,
     );
   }
-
-  toJson() {}
 }
 
 class Note {
@@ -42,4 +46,3 @@ class Note {
     required this.content,
   });
 }
-

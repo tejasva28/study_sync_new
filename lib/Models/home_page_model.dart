@@ -21,9 +21,9 @@ class PlaylistSchedule {
   final String playlistTitle;
   final String thumbnailUrl;
   final DateTime selectedDateTime;
+  final List<VideoModel> videos;
   final int videoCount; // Assuming you're keeping track of how many videos are in the playlist
-  final Duration totalDuration; // Assuming you're calculating the total duration of all videos
-  final List<Video> videos; // Add this line to include videos in your playlist schedule
+  final Duration totalDuration; // Assuming you're calculating the total duration of all videos`
 
   PlaylistSchedule({
     required this.playlistLink,

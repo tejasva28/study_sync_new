@@ -10,7 +10,7 @@ Future<Map<String, dynamic>> fetchPlaylistDetails(String playlistUrl) async {
   print('Extracted playlist ID: $playlistId');
 
   final response = await http.get(
-    Uri.parse('http://10.0.2.2:4000/api/playlist/$playlistId/details'),
+    Uri.parse('https://fe00-117-220-236-245.ngrok-free.app/api/playlist/$playlistId/details'),
   );
 
   if (response.statusCode == 200) {
@@ -100,7 +100,8 @@ class VideoAdd extends StatelessWidget {
                         selectedDateTime: DateTime
                             .now(), // Assuming you want the current time as the default
                         videoCount: videoCount,
-                        totalDuration: totalDuration, videos: [],
+                        totalDuration: totalDuration, 
+                        scheduleTime: DateTime.now(), videos: [],
                       );
                       // Navigate to TimeSchedulingPage with the PlaylistSchedule object
                       Navigator.push(

@@ -7,96 +7,100 @@ import 'package:study_sync/service.dart';
 import '../Models/video_model.dart';
 import '../Provider/auth_provider.dart';
 import '../models/time_scheduling_model.dart';
+import 'package:flutter/material.dart';
 
 class MonthDateRow extends StatefulWidget {
+  const MonthDateRow({ Key? key }) : super(key: key);
   @override
-  _MonthDateRowState createState() => _MonthDateRowState();
+  State<MonthDateRow> createState() => _MonthDateRowState();
 }
 
 class _MonthDateRowState extends State<MonthDateRow> {
-  List<VideoModel>? videos;
-  bool isLoading = true;
-  String? errorMessage;
   late ApiService _apiService;
   late TokenStorageService _tokenStorageService;
+  List<VideoModel>? _videos;
+  bool _isLoading = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _tokenStorageService = TokenStorageService();
-    _apiService = ApiService('https://fe00-117-220-236-245.ngrok-free.app/api',
-        _tokenStorageService);
-    fetchData();
+    _apiService = ApiService(
+      'https://fe00-117-220-236-245.ngrok-free.app/api',
+      _tokenStorageService,
+    );
+    _fetchData();
   }
-  
 
-  Future<void> fetchData() async {
-    setState(() {
-      isLoading = true;
-    });
-
+  Future<void> _fetchData() async {
+    setState(() => _isLoading = true);
     try {
-      String? token = await _tokenStorageService.getToken();
-      if (token == null) {
-        throw Exception('No token found');
-      }
-      final fetchedVideos = await _apiService.fetchVideos();
-
-       // Debug print for checking video titles
-    for (var video in fetchedVideos) {
-        print("Video title: ${video.title}");
-    }
+      final token = await _tokenStorageService.getToken() ?? '';
+      final fetchedVideos = await _apiService.fetchVideos(token);
       setState(() {
-        videos = fetchedVideos.cast<VideoModel>();
-        print("Videos fetched: ${fetchedVideos.length}");
-        isLoading = false;
+        _videos = fetchedVideos.cast<VideoModel>();
+        _isLoading = false;
       });
     } catch (error) {
       setState(() {
-        isLoading = false;
-        errorMessage = error.toString();
+        _isLoading = false;
+        _errorMessage = error.toString();
       });
     }
   }
 
   List<DateTime> _getNextDates(int count) {
     return List.generate(
-        count, (index) => DateTime.now().add(Duration(days: index)));
+      count,
+      (index) => DateTime.now().add(Duration(days: index)),
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
-    if (isLoading) {
-      return Scaffold(
-        appBar: AppBar(title: Text('Scheduled Videos')),
-        body: Center(child: CircularProgressIndicator()),
-      );
+  Widget (BuildContext context) {
+    if (_isLoading) {
+      return _loadingWidget();
+    } else if (_errorMessage != null) {
+      return _errorWidget();
+    } else if (_videos == null || _videos!.isEmpty) {
+      return _emptyWidget();
+    } else {
+      return _videosWidget();
     }
+  }
 
-    if (errorMessage != null) {
-      return Scaffold(
-        appBar: AppBar(title: Text('Error')),
-        body: Center(child: Text(errorMessage!)),
-      );
-    }
+  _loadingWidget() {
+    return Scaffold(
+      appBar: AppBar(title: Text('Scheduled Videos')),
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
 
-    if (videos == null || videos!.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: Text('Scheduled Videos')),
-        body: Center(child: Text('No scheduled videos found')),
-      );
-    }
+  _errorWidget() {
+    return Scaffold(
+      appBar: AppBar(title: Text('Error')),
+      body: Center(child: Text(_errorMessage!)),
+    );
+  }
 
-    List<DateTime> dateList = _getNextDates(20);
+  _emptyWidget() {
+    return Scaffold(
+      appBar: AppBar(title: Text('Scheduled Videos')),
+      body: Center(child: Text('No scheduled videos found')),
+    );
+  }
+
+  _videosWidget() {
+    final dateList = _getNextDates(20);
     int videoIndex = 0;
-
     return Scaffold(
       appBar: AppBar(title: Text('Scheduled Videos')),
       body: ListView.builder(
         itemCount: dateList.length,
         itemBuilder: (context, index) {
-          DateTime date = dateList[index];
-          VideoModel video = videos![videoIndex % videos!.length];
+          final date = dateList[index];
+          final video = _videos![videoIndex % _videos!.length];
           videoIndex++;
 
           return Column(
@@ -117,19 +121,18 @@ class _MonthDateRowState extends State<MonthDateRow> {
     );
   }
 
-  Widget _buildScheduledVideo(BuildContext context, VideoModel video) {
+  _buildScheduledVideo(BuildContext context, VideoModel video) {
     return Card(
       margin: EdgeInsets.only(bottom: 8),
       child: ListTile(
         leading: Icon(Icons.video_library),
-        title: Text(video.title,
-            style: TextStyle(
-                fontWeight: FontWeight.bold)), // Ensure title is displayed
+        title: Text(
+          video.title,
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         subtitle: Text(video.videoUrl),
         trailing: Text(DateFormat.jm().format(video.scheduledDate)),
       ),
     );
   }
-  
-  
 }

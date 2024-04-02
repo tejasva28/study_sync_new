@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import '../Models/video_model.dart';
 import 'package:study_sync/Pages/home.dart';
@@ -49,7 +50,7 @@ class _TimeSchedulingPageState extends State<TimeSchedulingPage> {
   }
 }
 @override
-Widget build(BuildContext context) {
+Widget (BuildContext context) {
   return Scaffold(
     appBar: AppBar(
       title: Text('Schedule Playlist', style: TextStyle(color: Colors.white)),

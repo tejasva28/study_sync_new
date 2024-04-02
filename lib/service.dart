@@ -52,14 +52,12 @@ class TokenStorageService {
   }
 }
 
-// ApiService manages API calls
 class ApiService {
   final String apiURL;
-  final TokenStorageService tokenStorageService; // Correct variable name
+  final TokenStorageService tokenStorageService;
 
   ApiService(this.apiURL, this.tokenStorageService);
 
-  // Handles user login, saves the token if successful
   Future<String?> login(String email, String password) async {
     try {
       final response = await http.post(
@@ -71,7 +69,7 @@ class ApiService {
       if (response.statusCode == 200) {
         final String? token = json.decode(response.body)['token'];
         if (token != null) {
-          await tokenStorageService.saveToken(token); // Use tokenStorageService
+          await tokenStorageService.saveToken(token);
         }
         return token;
       } else {
@@ -84,8 +82,7 @@ class ApiService {
     }
   }
 
-  // Fetches videos using the saved token
-  Future<List<VideoModel>> fetchVideos() async {
+  Future<List<VideoModel>> fetchVideos(String token) async {
     String? token = await tokenStorageService.getToken();
     if (token == null) throw Exception('No token found');
 
@@ -99,19 +96,10 @@ class ApiService {
       );
 
       if (response.statusCode == 200) {
-        Map<String, dynamic> body = jsonDecode(response.body);
-        if (body['scheduledVideos'] is List) {
-          List<dynamic> videosData = body['scheduledVideos'];
-          return videosData
-              .map((dynamic item) => VideoModel.fromJson(item))
-              .toList();
-        } else {
-          throw Exception(
-              'Expected a list of scheduled videos but did not find one.');
-        }
+        List<dynamic> body = jsonDecode(response.body);
+        return body.map((dynamic item) => VideoModel.fromJson(item)).toList();
       } else {
-        throw Exception(
-            'Failed to fetch videos. Server responded with ${response.statusCode}');
+        throw Exception('Failed to fetch videos. Server responded with ${response.statusCode}');
       }
     } catch (e) {
       throw Exception('Failed to load videos: $e');

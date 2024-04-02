@@ -177,4 +177,5 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
       ),
     );
   }
+
 }

@@ -137,9 +137,20 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
                   ElevatedButton(
                     onPressed: _showRescheduleDialog,
                     style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Theme.of(context).colorScheme.secondary),
-                    child: const Text('Reschedule Video'),
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .secondary, // Set the background color of the container
+                      ),
+                      child: Text(
+                        'Reschedule Video',
+                        style: TextStyle(
+                            color: Colors.white), // Set the text color to white
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 20),
                   Text('Notes', style: Theme.of(context).textTheme.titleLarge),
@@ -172,10 +183,21 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
                   ElevatedButton(
                     onPressed: () => _addOrEditNote(),
                     style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            Theme.of(context).colorScheme.secondary),
-                    child: const Text('Save Note'),
-                  ),
+                      backgroundColor: Theme.of(context).colorScheme.secondary,
+                    ),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .secondary, // Set the background color of the container
+                      ),
+                      child: Text(
+                        'Save Note',
+                        style: TextStyle(
+                            color: Colors.white), // Set the text color to white
+                      ),
+                    ),
+                  )
                 ],
               ),
             ),

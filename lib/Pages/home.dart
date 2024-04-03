@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:study_sync/Pages/video_add.dart';
+import 'package:study_sync/Pages/video_page.dart';
 import 'package:study_sync/service.dart';
 import 'package:study_sync/token_service.dart';
 import '../Models/video_model.dart';
@@ -109,57 +110,68 @@ class _MonthDateRowState extends State<MonthDateRow> {
         },
       ),
       floatingActionButton: FloatingActionButton(
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => VideoAdd()), // Replace `VideoAddPage` with the actual class name of your add video page
-        );
-      },
-      child: const Icon(Icons.add),
-      tooltip: 'Add Video',
-    ),
-  );
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) =>
+                    VideoAdd()), // Replace `VideoAddPage` with the actual class name of your add video page
+          );
+        },
+        child: const Icon(Icons.add),
+        tooltip: 'Add Video',
+      ),
+    );
   }
 
   Widget _buildScheduledVideo(BuildContext context, VideoModel video) {
     // Assume video.duration is an int representing seconds; convert it to a Duration object
     String formattedDuration = formatDuration(video.duration);
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      clipBehavior: Clip.antiAlias, // Added for better UI effect
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Image.network(
-            video.thumbnailUrl,
-            width: double.infinity,
-            height: 200,
-            fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => VideoDetailsPage(video: video),
           ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Text(
-              video.title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
+        );
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        clipBehavior: Clip.antiAlias, // Added for better UI effect
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Image.network(
+              video.thumbnailUrl,
+              width: double.infinity,
+              height: 200,
+              fit: BoxFit.cover,
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            child: Text(
-              "${DateFormat('MMM d, yyyy').format(video.scheduledDate)} - $formattedDuration",
-              style: const TextStyle(
-                color: Colors.grey,
-                fontSize: 14,
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                video.title,
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-          ),
-        ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              child: Text(
+                "${DateFormat('MMM d, yyyy').format(video.scheduledDate)} - $formattedDuration",
+                style: const TextStyle(
+                  color: Colors.grey,
+                  fontSize: 14,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

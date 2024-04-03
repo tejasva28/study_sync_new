@@ -18,11 +18,11 @@ final GoRouter router = GoRouter(
     ),
     GoRoute(
       path: '/login',
-      builder: (context, state) => LoginScreen(),
+      builder: (context, state) => const LoginScreen(),
     ),
     GoRoute(
       path: '/home',
-      builder: (context, state) => MonthDateRow(),
+      builder: (context, state) => const MonthDateRow(),
     ),
     GoRoute(
       path: '/VideoAdd',

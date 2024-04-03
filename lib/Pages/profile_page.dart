@@ -7,11 +7,13 @@ class ProfilePage extends StatelessWidget {
   final String username = "Tejasva Bansal";
   final String userEmail = "tejasva.bansal@gmail.com";
 
+  const ProfilePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Profile"),
+        title: const Text("Profile"),
         backgroundColor: Colors.deepPurple,
         elevation: 0,
       ),
@@ -25,22 +27,22 @@ class ProfilePage extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 60,
-                    backgroundImage: NetworkImage("https://via.placeholder.com/150"),
+                    backgroundImage: const NetworkImage("https://via.placeholder.com/150"),
                     backgroundColor: Colors.grey.shade800,
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
                     username,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
                   ),
-                  SizedBox(height: 5),
+                  const SizedBox(height: 5),
                   Text(
                     userEmail,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 16,
                       color: Colors.white70,
                     ),
@@ -50,22 +52,22 @@ class ProfilePage extends StatelessWidget {
             ),
           ),
           ListTile(
-            leading: Icon(Icons.settings, color: Colors.deepPurple),
-            title: Text('Settings'),
+            leading: const Icon(Icons.settings, color: Colors.deepPurple),
+            title: const Text('Settings'),
             onTap: () {
               // Navigate to settings page or open settings modal
             },
           ),
           ListTile(
-            leading: Icon(Icons.exit_to_app, color: Colors.red),
-            title: Text('Log Out'),
+            leading: const Icon(Icons.exit_to_app, color: Colors.red),
+            title: const Text('Log Out'),
             onTap: () {
               // Handle account access, such as logging out
             },
           ),
           ListTile(
-  leading: Icon(Icons.brightness_4),
-  title: Text('Toggle Dark/Light Theme'),
+  leading: const Icon(Icons.brightness_4),
+  title: const Text('Toggle Dark/Light Theme'),
   onTap: () {
     final themeProvider = Provider.of<ThemeProvider>(context, listen: false);
     themeProvider.themeData = themeProvider.themeData.brightness == Brightness.dark

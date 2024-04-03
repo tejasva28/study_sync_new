@@ -19,7 +19,7 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
   Future<void> _launchURL() async {
     if (!await launch(widget.video.videoUrl)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not launch video URL')),
+        const SnackBar(content: Text('Could not launch video URL')),
       );
     }
   }
@@ -29,7 +29,7 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
       context: context,
       builder: (BuildContext context) {
         DateTime selectedDate = DateTime.now();
-        return Container(
+        return SizedBox(
           height: MediaQuery.of(context).size.height / 3,
           child: CupertinoDatePicker(
             initialDateTime: selectedDate,
@@ -53,13 +53,14 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
     showModalBottomSheet(
       context: context,
       builder: (_) => Container(
-        padding: EdgeInsets.all(20),
+        padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: _noteController,
-              decoration: InputDecoration(hintText: 'Write your note here...'),
+              decoration:
+                  const InputDecoration(hintText: 'Write your note here...'),
               autofocus: true,
             ),
             ElevatedButton(
@@ -68,7 +69,7 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
                 if (noteText.isNotEmpty) {
                   if (isEditing) {
                     setState(() {
-                      existingNote!.content = noteText; // Update existing note
+                      existingNote.content = noteText; // Update existing note
                     });
                   } else {
                     final newNote = Note(
@@ -110,7 +111,7 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
                 widget.video.thumbnailUrl,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
-                    Icon(Icons.error, color: Colors.red, size: 100),
+                    const Icon(Icons.error, color: Colors.red, size: 100),
               ),
             ),
             Padding(
@@ -119,39 +120,43 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(widget.video.title,
-                      style: Theme.of(context).textTheme.headline6),
-                  SizedBox(height: 8),
+                      style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 8),
                   Text('Duration: ${widget.video.duration.inMinutes} minutes',
-                      style: TextStyle(color: Colors.grey)),
-                  SizedBox(height: 20),
+                      style: const TextStyle(color: Colors.grey)),
+                  const SizedBox(height: 20),
                   OutlinedButton.icon(
-                    icon: Icon(Icons.play_circle_outline, color: Colors.red),
-                    label: Text('Watch on YouTube'),
+                    icon: const Icon(Icons.play_circle_outline,
+                        color: Colors.red),
+                    label: const Text('Watch on YouTube'),
                     onPressed: _launchURL,
                     style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: Colors.red)),
+                        side: const BorderSide(color: Colors.red)),
                   ),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
                   ElevatedButton(
                     onPressed: _showRescheduleDialog,
-                    child: Text('Reschedule Video'),
                     style: ElevatedButton.styleFrom(
-                        primary: Theme.of(context).colorScheme.secondary),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.secondary),
+                    child: const Text('Reschedule Video'),
                   ),
-                  SizedBox(height: 20),
-                  Text('Notes', style: Theme.of(context).textTheme.headline6),
+                  const SizedBox(height: 20),
+                  Text('Notes', style: Theme.of(context).textTheme.titleLarge),
                   ...notes
                       .map((note) => ListTile(
                             title: Text(note.content),
                             trailing: Wrap(
                               children: <Widget>[
                                 IconButton(
-                                  icon: Icon(Icons.edit, color: Colors.orange),
+                                  icon: const Icon(Icons.edit,
+                                      color: Colors.orange),
                                   onPressed: () =>
                                       _addOrEditNote(existingNote: note),
                                 ),
                                 IconButton(
-                                  icon: Icon(Icons.delete, color: Colors.red),
+                                  icon: const Icon(Icons.delete,
+                                      color: Colors.red),
                                   onPressed: () => _deleteNote(note),
                                 ),
                               ],
@@ -160,14 +165,16 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
                       .toList(),
                   TextField(
                     controller: _noteController,
-                    decoration: InputDecoration(hintText: 'Add a note...'),
+                    decoration:
+                        const InputDecoration(hintText: 'Add a note...'),
                     maxLines: null,
                   ),
                   ElevatedButton(
                     onPressed: () => _addOrEditNote(),
-                    child: Text('Save Note'),
                     style: ElevatedButton.styleFrom(
-                        primary: Theme.of(context).colorScheme.secondary),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.secondary),
+                    child: const Text('Save Note'),
                   ),
                 ],
               ),
@@ -177,5 +184,4 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
       ),
     );
   }
-
 }

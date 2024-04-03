@@ -1,51 +1,49 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:intl/intl.dart';
-import 'package:provider/provider.dart';
-import 'package:study_sync/service.dart';
-import '../Models/video_model.dart';
-import '../Provider/auth_provider.dart';
-import '../models/time_scheduling_model.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:study_sync/Pages/video_add.dart';
+import 'package:study_sync/service.dart';
+import 'package:study_sync/token_service.dart';
+import '../Models/video_model.dart';
 
 class MonthDateRow extends StatefulWidget {
-  const MonthDateRow({ Key? key }) : super(key: key);
+  const MonthDateRow({Key? key}) : super(key: key);
+
   @override
-  State<MonthDateRow> createState() => _MonthDateRowState();
+  _MonthDateRowState createState() => _MonthDateRowState();
 }
 
 class _MonthDateRowState extends State<MonthDateRow> {
   late ApiService _apiService;
-  late TokenStorageService _tokenStorageService;
-  List<VideoModel>? _videos;
-  bool _isLoading = true;
-  String? _errorMessage;
+  late TokenService _tokenStorageService;
+  List<VideoModel>? videos;
+  bool isLoading = true;
+  String? errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _tokenStorageService = TokenStorageService();
-    _apiService = ApiService(
-      'https://fe00-117-220-236-245.ngrok-free.app/api',
-      _tokenStorageService,
-    );
+    _tokenStorageService = TokenService('http://10.0.2.2:4000/api');
+    _apiService = ApiService('http://10.0.2.2:4000/api', _tokenStorageService);
     _fetchData();
   }
 
   Future<void> _fetchData() async {
-    setState(() => _isLoading = true);
     try {
-      final token = await _tokenStorageService.getToken() ?? '';
-      final fetchedVideos = await _apiService.fetchVideos(token);
+      String? token = await _tokenStorageService.getToken();
+      if (token == null) {
+        throw Exception('No token found');
+      }
+      List<VideoModel> fetchedVideos = await _apiService.fetchVideos();
       setState(() {
-        _videos = fetchedVideos.cast<VideoModel>();
-        _isLoading = false;
+        videos = fetchedVideos;
+        isLoading = false;
       });
     } catch (error) {
       setState(() {
-        _isLoading = false;
-        _errorMessage = error.toString();
+        isLoading = false;
+        errorMessage = error.toString();
       });
     }
   }
@@ -58,81 +56,122 @@ class _MonthDateRowState extends State<MonthDateRow> {
   }
 
   @override
-  Widget (BuildContext context) {
-    if (_isLoading) {
+  Widget build(BuildContext context) {
+    if (isLoading) {
       return _loadingWidget();
-    } else if (_errorMessage != null) {
+    } else if (errorMessage != null) {
       return _errorWidget();
-    } else if (_videos == null || _videos!.isEmpty) {
+    } else if (videos == null || videos!.isEmpty) {
       return _emptyWidget();
     } else {
       return _videosWidget();
     }
   }
 
-  _loadingWidget() {
+  Widget _loadingWidget() {
     return Scaffold(
-      appBar: AppBar(title: Text('Scheduled Videos')),
-      body: Center(child: CircularProgressIndicator()),
+      appBar: AppBar(title: const Text('Scheduled Videos')),
+      body: const Center(child: CircularProgressIndicator()),
     );
   }
 
-  _errorWidget() {
+  Widget _errorWidget() {
     return Scaffold(
-      appBar: AppBar(title: Text('Error')),
-      body: Center(child: Text(_errorMessage!)),
+      appBar: AppBar(title: const Text('Error')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Text(
+            errorMessage!,
+            style: const TextStyle(fontSize: 18),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
     );
   }
 
-  _emptyWidget() {
+  Widget _emptyWidget() {
     return Scaffold(
-      appBar: AppBar(title: Text('Scheduled Videos')),
-      body: Center(child: Text('No scheduled videos found')),
+      appBar: AppBar(title: const Text('Scheduled Videos')),
+      body: const Center(child: Text('No scheduled videos found')),
     );
   }
 
-  _videosWidget() {
-    final dateList = _getNextDates(20);
-    int videoIndex = 0;
+  Widget _videosWidget() {
     return Scaffold(
-      appBar: AppBar(title: Text('Scheduled Videos')),
+      appBar: AppBar(title: const Text('Scheduled Videos')),
       body: ListView.builder(
-        itemCount: dateList.length,
+        itemCount: videos?.length ?? 0,
         itemBuilder: (context, index) {
-          final date = dateList[index];
-          final video = _videos![videoIndex % _videos!.length];
-          videoIndex++;
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  DateFormat('EEEE, MMMM d').format(date),
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              _buildScheduledVideo(context, video),
-            ],
-          );
+          final video = videos![index];
+          return _buildScheduledVideo(context, video);
         },
       ),
+      floatingActionButton: FloatingActionButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => VideoAdd()), // Replace `VideoAddPage` with the actual class name of your add video page
+        );
+      },
+      child: const Icon(Icons.add),
+      tooltip: 'Add Video',
+    ),
+  );
+  }
+
+  Widget _buildScheduledVideo(BuildContext context, VideoModel video) {
+    // Assume video.duration is an int representing seconds; convert it to a Duration object
+    String formattedDuration = formatDuration(video.duration);
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      clipBehavior: Clip.antiAlias, // Added for better UI effect
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.network(
+            video.thumbnailUrl,
+            width: double.infinity,
+            height: 200,
+            fit: BoxFit.cover,
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              video.title,
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Text(
+              "${DateFormat('MMM d, yyyy').format(video.scheduledDate)} - $formattedDuration",
+              style: const TextStyle(
+                color: Colors.grey,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
-  _buildScheduledVideo(BuildContext context, VideoModel video) {
-    return Card(
-      margin: EdgeInsets.only(bottom: 8),
-      child: ListTile(
-        leading: Icon(Icons.video_library),
-        title: Text(
-          video.title,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        subtitle: Text(video.videoUrl),
-        trailing: Text(DateFormat.jm().format(video.scheduledDate)),
-      ),
-    );
+  String formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    if (duration.inHours > 0) {
+      return "${twoDigits(duration.inHours)}h ${twoDigitMinutes}m";
+    } else {
+      return "${twoDigitMinutes}m ${twoDigitSeconds}s";
+    }
   }
 }

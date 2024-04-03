@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:study_sync/Pages/time_scheduling_page.dart';
 import 'dart:convert';
 import '../Models/time_scheduling_model.dart'; // Ensure this path is correct
+import 'package:study_sync/token_service.dart';
 
 Future<Map<String, dynamic>> fetchPlaylistDetails(String playlistUrl) async {
   print('Fetching details for URL: $playlistUrl');
@@ -10,13 +11,15 @@ Future<Map<String, dynamic>> fetchPlaylistDetails(String playlistUrl) async {
   print('Extracted playlist ID: $playlistId');
 
   final response = await http.get(
-    Uri.parse('https://fe00-117-220-236-245.ngrok-free.app/api/playlist/$playlistId/details'),
+    Uri.parse('http://10.0.2.2:4000/api/playlist/$playlistId/details'),
   );
 
   if (response.statusCode == 200) {
     return json.decode(response.body);
   } else {
-    throw Exception('Failed to load playlist details');
+    print('Failed to load playlist details: ${response.statusCode}');
+    print('Response body: ${response.body}');
+    throw Exception('Failed to load playlist details: ${response.body}');
   }
 }
 
@@ -36,7 +39,7 @@ class VideoAdd extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Add Playlist'),
+        title: const Text('Add Playlist'),
         backgroundColor: Colors.blue,
       ),
       body: Container(
@@ -45,8 +48,9 @@ class VideoAdd extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(child: Icon(Icons.link, size: 100, color: Colors.black)),
-              SizedBox(height: 20),
+              const Center(
+                  child: Icon(Icons.link, size: 100, color: Colors.black)),
+              const SizedBox(height: 20),
               Center(
                 child: Text(
                   "Please paste the link below and Press Add Playlist button",
@@ -54,24 +58,26 @@ class VideoAdd extends StatelessWidget {
                   style: TextStyle(fontSize: 16, color: Colors.grey[600]),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextFormField(
                 controller: textController,
                 focusNode: textFieldFocusNode,
                 decoration: InputDecoration(
                   labelText: 'Paste the link here',
                   enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.grey, width: 2),
+                      borderSide:
+                          const BorderSide(color: Colors.grey, width: 2),
                       borderRadius: BorderRadius.circular(8)),
                   focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.blue, width: 2),
+                      borderSide:
+                          const BorderSide(color: Colors.blue, width: 2),
                       borderRadius: BorderRadius.circular(8)),
                   contentPadding:
-                      EdgeInsetsDirectional.fromSTEB(20, 32, 20, 12),
+                      const EdgeInsetsDirectional.fromSTEB(20, 32, 20, 12),
                 ),
               ),
-              SizedBox(height: 20),
-              Container(
+              const SizedBox(height: 20),
+              SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
@@ -100,7 +106,7 @@ class VideoAdd extends StatelessWidget {
                         selectedDateTime: DateTime
                             .now(), // Assuming you want the current time as the default
                         videoCount: videoCount,
-                        totalDuration: totalDuration, 
+                        totalDuration: totalDuration,
                         scheduleTime: DateTime.now(), videos: [],
                       );
                       // Navigate to TimeSchedulingPage with the PlaylistSchedule object
@@ -117,9 +123,10 @@ class VideoAdd extends StatelessWidget {
                       );
                     }
                   },
-                  child: Text('Add Playlist'),
                   style: ElevatedButton.styleFrom(
-                      primary: Colors.blue, onPrimary: Colors.white),
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blue),
+                  child: const Text('Add Playlist'),
                 ),
               )
             ],

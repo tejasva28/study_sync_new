@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:provider/provider.dart';
-import '../Provider/auth_provider.dart';
 import 'package:study_sync/service.dart';
+import 'package:study_sync/token_service.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -16,14 +15,14 @@ class _LoginScreenState extends State<LoginScreen> {
 final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  late TokenStorageService _tokenStorageService = TokenStorageService();
+  late TokenService _tokenStorageService = TokenService('http://10.0.2.2:4000/api');
   late ApiService _apiService;  // Declare _apiService here as late
 
   @override
   void initState() {
     super.initState();
-    _tokenStorageService = TokenStorageService();
-    _apiService = ApiService('https://fe00-117-220-236-245.ngrok-free.app/api', _tokenStorageService); // Initialize ApiService with the base URL
+    _tokenStorageService = TokenService('http://10.0.2.2:4000/api');
+    _apiService = ApiService('http://10.0.2.2:4000/api', _tokenStorageService); // Initialize ApiService with the base URL
   }
 
   void _tryLogin() async {
@@ -48,7 +47,7 @@ final _formKey = GlobalKey<FormState>();
   Widget build(BuildContext context) {
     return Scaffold(
       body: SingleChildScrollView(
-        padding: EdgeInsets.symmetric(horizontal: 24, vertical: 80),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 80),
         child: Form(
           key: _formKey,
           child: Column(
@@ -57,7 +56,7 @@ final _formKey = GlobalKey<FormState>();
             children: <Widget>[
               TextFormField(
                 controller: _emailController,
-                decoration: InputDecoration(labelText: 'Email'),
+                decoration: const InputDecoration(labelText: 'Email'),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Please enter your email';
@@ -67,7 +66,7 @@ final _formKey = GlobalKey<FormState>();
               ),
               TextFormField(
                 controller: _passwordController,
-                decoration: InputDecoration(labelText: 'Password'),
+                decoration: const InputDecoration(labelText: 'Password'),
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -78,7 +77,7 @@ final _formKey = GlobalKey<FormState>();
               ),
               ElevatedButton(
                 onPressed: _tryLogin,
-                child: Text('Login'),
+                child: const Text('Login'),
               ),
             ],
           ),

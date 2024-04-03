@@ -2,11 +2,10 @@ import 'dart:convert';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
-import '../Models/video_model.dart';
-import 'package:study_sync/Pages/home.dart';
+import 'package:study_sync/token_service.dart';
 import '../Models/time_scheduling_model.dart';
+import 'package:intl/intl.dart';
 
 class TimeSchedulingPage extends StatefulWidget {
   final PlaylistSchedule playlistSchedule;
@@ -20,134 +19,214 @@ class TimeSchedulingPage extends StatefulWidget {
 
 class _TimeSchedulingPageState extends State<TimeSchedulingPage> {
   DateTime selectedDateTime = DateTime.now();
-  late Future<List<PlaylistSchedule>> futureScheduledPlaylists;
+  late TokenService tokenService;
 
   @override
   void initState() {
     super.initState();
-    futureScheduledPlaylists = fetchScheduledPlaylists();
+    tokenService =
+        TokenService('http://10.0.2.2:4000/api'); // Adjust API URL as needed
   }
 
- Future<List<PlaylistSchedule>> fetchScheduledPlaylists() async {
+  Future<void> saveScheduledVideos(String token) async {  // Removed parameter 'String token' because it's retrieved inside the function
+  String apiUrl = '${tokenService.authApiUrl}/playlistSchedule/create';
+  String? token = await tokenService.getToken();
+
+  print('API URL: $apiUrl');
+  print('Token retrieved: ${token?.substring(0, 10)}');  // Logs first 10 characters of the token for verification
+
+  if (token == null) {
+    print('No token found');
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Error'),
+        content: const Text('Authentication token not found'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+    return;
+  }
+
+  print('Authorization Header: Bearer ${token.substring(0, 10)}');
+
+  var requestBody = jsonEncode({
+    'playlistLink': widget.playlistSchedule.playlistLink,
+    'scheduleTime': selectedDateTime.toIso8601String(),
+  });
+  print('Request body: $requestBody');
+
   try {
-    final response = await http.get(
-      Uri.parse('https://fe00-117-220-236-245.ngrok-free.app/api/playlistSchedule/create'),
-      headers: <String, String>{
+    final response = await http.post(
+      Uri.parse(apiUrl),
+      headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
       },
+      body: requestBody,
     );
 
-    if (response.statusCode == 200) {
-      List<dynamic> playlistData = jsonDecode(response.body);
-      return playlistData.map((data) => PlaylistSchedule.fromJson(data)).toList();
-    } else {
-      // Handle error
-      throw Exception('Failed to load scheduled playlists');
-    }
-  } catch (e) {
-    // Handle any errors that occur during the HTTP request
-    throw Exception('An error occurred: $e');
-  }
-}
-@override
-Widget (BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: Text('Schedule Playlist', style: TextStyle(color: Colors.white)),
-      backgroundColor: Colors.black.withOpacity(0.5), // Ensures the AppBar text is visible
-      elevation: 0,
-    ),
-    extendBodyBehindAppBar: true,
-    body: Stack(
-      children: [
-        Positioned.fill(
-          child: Image.network(
-            widget.playlistSchedule.thumbnailUrl, // Corrected reference
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Center(child: Text('Could not load image'));
-            },
-          ),
-        ),
-        Positioned.fill(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-            child: Container(
-              color: Colors.black.withOpacity(0.3),
-            ),
-          ),
-        ),
-        Column(
-          children: [
-            SizedBox(height: MediaQuery.of(context).padding.top + kToolbarHeight),
-            AspectRatio(
-              aspectRatio: 16 / 9,
-              child: Image.network(
-                widget.playlistSchedule.thumbnailUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Center(child: Text('Could not load image'));
-                },
-              ),
-            ),
-            Expanded(
-              child: Container(
-                color: Colors.black.withOpacity(0.7),
-                child: ListView(
-                  padding: EdgeInsets.all(16),
-                  children: [
-                    Text(widget.playlistSchedule.playlistTitle, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
-                    SizedBox(height: 20),
-                    Text('${widget.playlistSchedule.videoCount} Videos', style: TextStyle(fontSize: 18, color: Colors.white)),
-                    SizedBox(height: 8),
-                    Text('Total Duration: ${formatDuration(widget.playlistSchedule.totalDuration)}', style: TextStyle(fontSize: 18, color: Colors.white)),
-                    SizedBox(height: 24),
-                    Container(
-                      height: 100,
-                      child: CupertinoDatePicker(
-                        mode: CupertinoDatePickerMode.time,
-                        initialDateTime: selectedDateTime,
-                        onDateTimeChanged: (DateTime newDateTime) {
-                          setState(() {
-                            selectedDateTime = newDateTime;
-                          });
-                        },
-                        backgroundColor: Colors.transparent,
-                      ),
-                    ),
-                    SizedBox(height: 24),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          final TimeOfDay selectedTime = TimeOfDay.fromDateTime(selectedDateTime);
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) => AlertDialog(
-                              title: Text('Time Selected'),
-                              content: Text('You have selected ${selectedTime.format(context)}.'),
-                              actions: <Widget>[
-                                TextButton(
-                                  child: Text('OK'),
-                                  onPressed: () => Navigator.of(context).pop(),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                        child: Text('Confirm Time'),
-                        style: ElevatedButton.styleFrom(primary: Colors.blueAccent, onPrimary: Colors.white, textStyle: TextStyle(fontSize: 18)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+    print('Response status: ${response.statusCode}');
+    print('Response body: ${response.body}');
+
+    if (response.statusCode == 201) {
+      final dateTimeFormatted = DateFormat('yyyy-MM-dd HH:mm:ss').format(selectedDateTime);
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Time Selected'),
+          content: Text('You have selected $dateTimeFormatted.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
             ),
           ],
         ),
-      ],
-    ),
-  );
+      );
+    } else {
+      throw Exception('Failed to schedule playlist: ${response.body}');
+    }
+  } catch (e) {
+    print('An error occurred during the request: $e');
+    showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: const Text('Error'),
+        content: Text('An error occurred: $e'),
+        actions: <Widget>[
+          TextButton(
+            child: const Text('OK'),
+            onPressed: () => Navigator.of(context).pop(),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Schedule Playlist',
+            style: TextStyle(color: Colors.white)),
+        backgroundColor:
+            Colors.black.withOpacity(0.5), // Ensures the AppBar text is visible
+        elevation: 0,
+      ),
+      extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.network(
+              widget.playlistSchedule.thumbnailUrl, // Corrected reference
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Center(child: Text('Could not load image'));
+              },
+            ),
+          ),
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                color: Colors.black.withOpacity(0.3),
+              ),
+            ),
+          ),
+          Column(
+            children: [
+              SizedBox(
+                  height: MediaQuery.of(context).padding.top + kToolbarHeight),
+              AspectRatio(
+                aspectRatio: 16 / 9,
+                child: Image.network(
+                  widget.playlistSchedule.thumbnailUrl,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Center(child: Text('Could not load image'));
+                  },
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  color: Colors.black.withOpacity(0.7),
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      Text(widget.playlistSchedule.playlistTitle,
+                          style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white)),
+                      const SizedBox(height: 20),
+                      Text('${widget.playlistSchedule.videoCount} Videos',
+                          style: const TextStyle(
+                              fontSize: 18, color: Colors.white)),
+                      const SizedBox(height: 8),
+                      Text(
+                          'Total Duration: ${formatDuration(widget.playlistSchedule.totalDuration)}',
+                          style: const TextStyle(
+                              fontSize: 18, color: Colors.white)),
+                      const SizedBox(height: 24),
+                      SizedBox(
+                        height: 100,
+                        child: CupertinoDatePicker(
+                          mode: CupertinoDatePickerMode.time,
+                          initialDateTime: selectedDateTime,
+                          onDateTimeChanged: (DateTime newDateTime) {
+                            setState(() {
+                              selectedDateTime = newDateTime;
+                            });
+                          },
+                          backgroundColor: Colors.transparent,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Center(
+                        child: ElevatedButton(
+                          onPressed: () {
+                            final TimeOfDay selectedTime =
+                                TimeOfDay.fromDateTime(selectedDateTime);
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) => AlertDialog(
+                                title: const Text('Time Selected'),
+                                content: Text(
+                                    'You have selected ${selectedTime.format(context)}.'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: const Text('OK'),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              backgroundColor: Colors.blueAccent,
+                              textStyle: const TextStyle(fontSize: 18)),
+                          child: const Text('Confirm Time'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
 
   Widget buildBackgroundImage() {
     return Positioned.fill(
@@ -155,23 +234,25 @@ Widget (BuildContext context) {
         widget.playlistSchedule.thumbnailUrl,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) =>
-            Center(child: Text('Could not load image')),
+            const Center(child: Text('Could not load image')),
       ),
     );
   }
 
   Widget buildContent() {
     return BackdropFilter(
-      filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+      filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
       child: Container(
-        color: Colors.black.withOpacity(0.3),
+        color: Colors.black.withOpacity(0.5),
         child: Column(
           children: [
-            SizedBox(
-                height: MediaQuery.of(context as BuildContext).padding.top +
-                    kToolbarHeight),
+            Spacer(flex: 3),
             buildThumbnailImage(),
-            buildListView(),
+            buildDetails(),
+            Spacer(),
+            buildDatePicker(),
+            buildConfirmButton(),
+            Spacer(flex: 2),
           ],
         ),
       ),
@@ -185,7 +266,33 @@ Widget (BuildContext context) {
         widget.playlistSchedule.thumbnailUrl,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) =>
-            Center(child: Text('Could not load image')),
+            const Center(child: Text('Could not load image')),
+      ),
+    );
+  }
+
+  Widget buildDetails() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      color: Colors.black.withOpacity(0.7),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.playlistSchedule.playlistTitle,
+            style: const TextStyle(
+                fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '${widget.playlistSchedule.videoCount} Videos',
+            style: const TextStyle(fontSize: 18, color: Colors.white),
+          ),
+          Text(
+            'Total Duration: ${formatDuration(widget.playlistSchedule.totalDuration)}',
+            style: const TextStyle(fontSize: 18, color: Colors.white),
+          ),
+        ],
       ),
     );
   }
@@ -193,23 +300,23 @@ Widget (BuildContext context) {
   Widget buildListView() {
     return Expanded(
       child: ListView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         children: [
           Text(widget.playlistSchedule.playlistTitle,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
                   color: Colors.white)),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Text('${widget.playlistSchedule.videoCount} Videos',
-              style: TextStyle(fontSize: 18, color: Colors.white)),
-          SizedBox(height: 8),
+              style: const TextStyle(fontSize: 18, color: Colors.white)),
+          const SizedBox(height: 8),
           Text(
               'Total Duration: ${formatDuration(widget.playlistSchedule.totalDuration)}',
-              style: TextStyle(fontSize: 18, color: Colors.white)),
-          SizedBox(height: 24),
+              style: const TextStyle(fontSize: 18, color: Colors.white)),
+          const SizedBox(height: 24),
           buildDatePicker(),
-          SizedBox(height: 24),
+          const SizedBox(height: 24),
           buildConfirmButton(),
         ],
       ),
@@ -218,46 +325,76 @@ Widget (BuildContext context) {
 
   Widget buildDatePicker() {
     return Container(
-      height: 100,
+      height: 500,
+      color: Colors.white.withOpacity(0.7),
       child: CupertinoDatePicker(
         mode: CupertinoDatePickerMode.time,
         initialDateTime: selectedDateTime,
-        onDateTimeChanged: (newDateTime) {
-          setState(() {
-            selectedDateTime = newDateTime;
-          });
-        },
+        onDateTimeChanged: (newDateTime) =>
+            setState(() => selectedDateTime = newDateTime),
         backgroundColor: Colors.transparent,
       ),
     );
   }
 
   Widget buildConfirmButton() {
-    return Center(
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: ElevatedButton(
         onPressed: _onConfirmTimePressed,
-        child: Text('Confirm Time'),
         style: ElevatedButton.styleFrom(
-            primary: Colors.blueAccent, onPrimary: Colors.white),
+          foregroundColor: Colors.white,
+          backgroundColor: Colors.blueAccent,
+          textStyle: const TextStyle(fontSize: 18),
+        ),
+        child: const Text('Confirm Time'),
       ),
     );
   }
 
-  void _onConfirmTimePressed() {
-    final TimeOfDay selectedTime = TimeOfDay.fromDateTime(selectedDateTime);
-    showDialog(
-      context: context,
-      builder: (BuildContext context) => AlertDialog(
-        title: Text('Time Selected'),
-        content: Text('You have selected ${selectedTime.format(context)}.'),
-        actions: <Widget>[
-          TextButton(
-            child: Text('OK'),
-            onPressed: () => Navigator.of(context).pop(),
-          ),
-        ],
-      ),
-    );
+  Future<void> _onConfirmTimePressed() async {
+    final TimeOfDay selectedTime =
+        TimeOfDay.fromDateTime(selectedDateTime); // Rename to selectedTime
+    final String? token = await tokenService.getToken();
+    print('Selected Time: ${selectedTime.format(context)}');
+
+    if (token == null) {
+      // Handle case when token is not available
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: const Text('Authentication token not found'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
+    // Call save function after confirming the time
+    saveScheduledVideos(token).then((_) {
+      // The dialog now will be shown after successful saving inside saveScheduledVideos
+    }).catchError((error) {
+      // If saving fails, show an error dialog or handle the error appropriately
+      showDialog(
+        context: context,
+        builder: (BuildContext context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text('Failed to schedule: $error'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   String formatDuration(Duration duration) {
@@ -267,15 +404,6 @@ Widget (BuildContext context) {
     return "$hours:$minutes";
   }
 }
-
-
-
-
-
-
-
-
-
 
 //  Future<void> savePlaylistSchedule() async {
 //     try {
@@ -321,21 +449,20 @@ Widget (BuildContext context) {
 //     }
 //   }
 
-
 // Assuming you have a method to get the current user's ID
-String getCurrentUserId() {
-  // Placeholder for actual user ID logic
-  return "userId";
-}
+// String getCurrentUserId() {
+//   // Placeholder for actual user ID logic
+//   return "userId";
+// }
 
 // Placeholder for fetchPlaylistSchedules
-Future<List<PlaylistSchedule>> fetchPlaylistSchedules() async {
-  // Placeholder: Implement the logic to fetch or generate your playlist schedules
-  // This could be an API call to your backend or a query to a local database
+// Future<List<PlaylistSchedule>> fetchPlaylistSchedules() async {
+//   // Placeholder: Implement the logic to fetch or generate your playlist schedules
+//   // This could be an API call to your backend or a query to a local database
 
-  // For demonstration, returning an empty list
-  return [];
-}
+//   // For demonstration, returning an empty list
+//   return [];
+// }
 
 // Future<void> savePlaylistSchedule() async {
 

@@ -35,6 +35,8 @@ class VideoModel {
       scheduledDate: parsedDate,
     );
   }
+
+  map(VideoModel Function(dynamic v) param0) {}
 }
 
 class Note {

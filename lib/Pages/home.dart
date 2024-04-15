@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:study_sync/Pages/video_add.dart';
@@ -18,9 +16,12 @@ class MonthDateRow extends StatefulWidget {
 class _MonthDateRowState extends State<MonthDateRow> {
   late ApiService _apiService;
   late TokenService _tokenStorageService;
-  List<VideoModel>? videos;
+  List<VideoModel> videos = [];
   bool isLoading = true;
+  bool isFetchingMore = false;
   String? errorMessage;
+  int currentPage = 1;
+  ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
@@ -28,24 +29,42 @@ class _MonthDateRowState extends State<MonthDateRow> {
     _tokenStorageService = TokenService('http://10.0.2.2:4000/api');
     _apiService = ApiService('http://10.0.2.2:4000/api', _tokenStorageService);
     _fetchData();
+    _scrollController.addListener(_onScroll);
   }
 
-  Future<void> _fetchData() async {
+  Future<void> _fetchData({bool isRefresh = false}) async {
+    if (isRefresh) {
+      currentPage = 1;
+      videos.clear();
+    }
     try {
       String? token = await _tokenStorageService.getToken();
       if (token == null) {
         throw Exception('No token found');
       }
-      List<VideoModel> fetchedVideos = await _apiService.fetchVideos();
+      List<VideoModel> fetchedVideos =
+          await _apiService.fetchVideos(page: currentPage);
       setState(() {
-        videos = fetchedVideos;
+        currentPage++;
+        videos.addAll(fetchedVideos);
         isLoading = false;
+        isFetchingMore = false;
       });
     } catch (error) {
       setState(() {
         isLoading = false;
+        isFetchingMore = false;
         errorMessage = error.toString();
       });
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels ==
+            _scrollController.position.maxScrollExtent &&
+        !isFetchingMore) {
+      setState(() => isFetchingMore = true);
+      _fetchData();
     }
   }
 
@@ -92,34 +111,66 @@ class _MonthDateRowState extends State<MonthDateRow> {
     );
   }
 
-  Widget _emptyWidget() {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Scheduled Videos')),
-      body: const Center(child: Text('No scheduled videos found')),
-    );
-  }
-
   Widget _videosWidget() {
     return Scaffold(
       appBar: AppBar(title: const Text('Scheduled Videos')),
-      body: ListView.builder(
-        itemCount: videos?.length ?? 0,
-        itemBuilder: (context, index) {
-          final video = videos![index];
-          return _buildScheduledVideo(context, video);
-        },
+      body: RefreshIndicator(
+        onRefresh: () => _fetchData(isRefresh: true),
+        child: ListView.builder(
+          controller: _scrollController,
+          itemCount: videos.length + (isFetchingMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index >= videos.length) {
+              return Center(child: CircularProgressIndicator());
+            }
+            final video = videos[index];
+            return _buildScheduledVideo(context, video);
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-                builder: (context) =>
-                    VideoAdd()), // Replace `VideoAddPage` with the actual class name of your add video page
+              builder: (context) => VideoAdd(),
+            ),
           );
         },
-        child: const Icon(Icons.add),
         tooltip: 'Add Video',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  Widget _emptyWidget() {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Scheduled Videos')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text('No scheduled videos found'),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => VideoAdd(),
+                  ),
+                );
+              },
+              child: const Text('Add Video'),
+            ),
+          ],
+        ),
       ),
     );
   }

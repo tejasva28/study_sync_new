@@ -20,10 +20,9 @@ class VideoModel {
     DateTime parsedDate;
 
     try {
-      // Ensure the scheduledDate includes time
       parsedDate = DateTime.parse(json['scheduledDate'] ?? '2000-01-01T00:00:00Z');
     } catch (_) {
-      parsedDate = DateTime.now(); // Fallback if parsing fails
+      parsedDate = DateTime.now();  // Fallback if parsing fails
     }
 
     return VideoModel(
@@ -35,8 +34,6 @@ class VideoModel {
       scheduledDate: parsedDate,
     );
   }
-
-  map(VideoModel Function(dynamic v) param0) {}
 }
 
 class Note {

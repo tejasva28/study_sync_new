@@ -308,6 +308,18 @@
       "languageVersion": "2.18"
     },
     {
+      "name": "hive",
+      "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/hive-2.2.3",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
+      "name": "hive_flutter",
+      "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/hive_flutter-1.1.0",
+      "packageUri": "lib/",
+      "languageVersion": "2.12"
+    },
+    {
       "name": "http",
       "rootUri": "file:///Users/tejasva/.pub-cache/hosted/pub.dev/http-1.1.0",
       "packageUri": "lib/",
@@ -806,7 +818,7 @@
       "languageVersion": "3.1"
     }
   ],
-  "generated": "2024-04-02T16:50:17.980147Z",
+  "generated": "2024-04-15T11:32:19.319351Z",
   "generator": "pub",
   "generatorVersion": "3.4.0-190.1.beta"
 }

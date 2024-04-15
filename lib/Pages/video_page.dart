@@ -145,7 +145,7 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
                             .colorScheme
                             .secondary, // Set the background color of the container
                       ),
-                      child: Text(
+                      child: const Text(
                         'Reschedule Video',
                         style: TextStyle(
                             color: Colors.white), // Set the text color to white
@@ -191,7 +191,7 @@ class _VideoDetailsPageState extends State<VideoDetailsPage> {
                             .colorScheme
                             .secondary, // Set the background color of the container
                       ),
-                      child: Text(
+                      child: const Text(
                         'Save Note',
                         style: TextStyle(
                             color: Colors.white), // Set the text color to white

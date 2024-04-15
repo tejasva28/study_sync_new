@@ -3,7 +3,6 @@ import 'package:http/http.dart' as http;
 import 'package:study_sync/Pages/time_scheduling_page.dart';
 import 'dart:convert';
 import '../Models/time_scheduling_model.dart'; // Ensure this path is correct
-import 'package:study_sync/token_service.dart';
 
 Future<Map<String, dynamic>> fetchPlaylistDetails(String playlistUrl) async {
   print('Fetching details for URL: $playlistUrl');
@@ -15,6 +14,7 @@ Future<Map<String, dynamic>> fetchPlaylistDetails(String playlistUrl) async {
   );
 
   if (response.statusCode == 200) {
+    print(response.body);
     return json.decode(response.body);
   } else {
     print('Failed to load playlist details: ${response.statusCode}');
@@ -100,7 +100,7 @@ class VideoAdd extends StatelessWidget {
                             .text, // Assuming this is always non-null
                         playlistTitle: playlistDetails['title'] ??
                             'Default Title', // Providing a default value
-                        thumbnailUrl: playlistDetails['thumbnails']['default']
+                        thumbnailUrl: playlistDetails['thumbnails']['high']
                                 ['url'] ??
                             'default_thumbnail_url', // Handling potential nulls
                         selectedDateTime: DateTime
